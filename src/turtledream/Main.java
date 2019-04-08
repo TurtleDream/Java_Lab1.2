@@ -11,11 +11,13 @@ class MyABC implements AsynchronousByteChannel{
     int speed;
     int size;
     private long lastTime = 0;
+
     MyABC(int speed){
         this.speed = speed;
     }
+
     @Override
-    public <A> void read(ByteBuffer dst, A attachment, CompletionHandler<Integer, ? super A> handler) {
+    public synchronized  <A>  void read(ByteBuffer dst, A attachment, CompletionHandler<Integer, ? super A> handler) {
         long t = size / speed;
         long currentTime = System.currentTimeMillis();
         if( lastTime == 0){
@@ -34,7 +36,7 @@ class MyABC implements AsynchronousByteChannel{
     }
 
     @Override
-    public Future<Integer> read(ByteBuffer dst) {
+    public synchronized Future<Integer> read(ByteBuffer dst) {
         long t = 1000 * size / speed;
         long currentTime = System.currentTimeMillis();
         if( lastTime == 0){
@@ -54,12 +56,12 @@ class MyABC implements AsynchronousByteChannel{
     }
 
     @Override
-    public <A> void write(ByteBuffer src, A attachment, CompletionHandler<Integer, ? super A> handler) {
+    public synchronized  <A> void write(ByteBuffer src, A attachment, CompletionHandler<Integer, ? super A> handler) {
         this.size = src.position();
     }
 
     @Override
-    public Future<Integer> write(ByteBuffer src) {
+    public synchronized Future<Integer> write(ByteBuffer src) {
         this.size = src.position();
         return null;
     }
@@ -70,18 +72,21 @@ class MyABC implements AsynchronousByteChannel{
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
 
     }
 }
 
 class MyThread extends Thread{
+
     private String p;
     private int speed;
+
     MyThread(String p,int speed){
         this.p = p;
         this.speed = speed;
     }
+
     @Override
     public void run() {
         try {
@@ -119,9 +124,9 @@ class MyThread extends Thread{
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        Thread thread = new MyThread("C:\\Users\\stani\\IdeaProjects\\LR1\\src\\turtledream\\1.txt",500);
-        Thread thread2 = new MyThread("C:\\Users\\stani\\IdeaProjects\\LR1\\src\\turtledream\\1.txt",1000);
+    public static void main(String[] args) {
+        Thread thread = new MyThread("/*Путь к файлу*/",500);
+        Thread thread2 = new MyThread("/*Путь к файлу*/",1000);
         thread.start();
         thread2.start();
     }
